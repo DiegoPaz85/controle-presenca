@@ -2,10 +2,10 @@ import sys
 import os
 from datetime import datetime
 
-# Adicionar o diretório src ao path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# Adicionar o diretório src ao path para imports funcionarem
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from database.connection import db
+from controle_presenca.database.connection import db
 
 class PresencaService:
     def __init__(self):
@@ -24,7 +24,7 @@ class PresencaService:
         
         agora = datetime.now()
         
-        # Inserir nova sessão e pegar o ID
+        # Inserir nova sessão
         db.execute(
             "INSERT INTO sessoes (inicio, status) VALUES (%s, 'ativa')",
             (agora,)
@@ -44,7 +44,7 @@ class PresencaService:
         
         agora = datetime.now()
         
-        # Calcular tempo efetivo (simplificado)
+        # Calcular tempo efetivo
         result = db.execute("SELECT inicio FROM sessoes WHERE id = %s", (self.sessao_id,))
         if result and len(result) > 0:
             inicio = result[0]['inicio']
