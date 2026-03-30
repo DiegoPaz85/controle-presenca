@@ -22,13 +22,15 @@ services:
       - ../:/app
     ports:
       - "8000:8000"
+    # A SOLUÇÃO ESTÁ AQUI: Ignora a trava de usuário apenas no ambiente local
+    user: "root"
+    command: uvicorn src.controle_presenca.api.app:app --host 0.0.0.0 --port 8000 --reload
 
   pgadmin:
     image: dpage/pgadmin4
     container_name: explicaaso_pgadmin
     restart: always
     environment:
-      # Credenciais de acesso ao painel do pgAdmin (pode ser o que você quiser)
       PGADMIN_DEFAULT_EMAIL: admin@explicaaso.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
