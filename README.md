@@ -3,6 +3,32 @@
 O **ExplicaASO** é um sistema robusto e seguro desenvolvido para unificar o controle de presença e a gestão de alunos do projeto. Ele substitui um ecossistema antigo baseado em planilhas soltas por uma arquitetura de software profissional baseada em microsserviços, conteinerização e banco de dados relacional.
 
 ---
+## 📂 Estrutura do Projeto
+
+Abaixo está a organização do repositório, seguindo padrões de modularização e separação de responsabilidades:
+
+```text
+controle-presenca-unificado/
+├── docker/                  # Infraestrutura e Receitas Docker
+│   ├── Dockerfile           # Imagem da aplicação Python
+│   ├── docker-compose.yml   # Orquestração (App + Banco de Dados)
+│   └── postgres_data/       # (Ignorado) Dados persistentes do DB
+├── scripts/                 # Automações e Migrações
+│   ├── backup.sh            # Script de Dump SQL e Upload Cloud
+│   ├── migracao_excel.py    # Importação de alunos (BancoDeDados.xlsx)
+│   └── migracao_presenca.py # Importação de histórico (presenca.xlsx)
+├── src/                     # Código Fonte da Aplicação
+│   └── controle_presenca/
+│       ├── database/        # Conexão, Modelos e Repositórios
+│       ├── services/        # Lógica de Negócio (Presença/SGDi)
+│       └── main.py          # Ponto de entrada (CLI)
+├── backups/                 # (Ignorado) Backups locais temporários
+├── .env                     # (Ignorado) Cofre de senhas e credenciais
+├── .gitignore               # Escudo de privacidade para o GitHub
+└── requirements.txt         # Dependências do Python (Pandas, SQLAlchemy, etc)
+
+
+
 
 ## 🗺️ Arquitetura do Sistema
 
