@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from ..models import Aluno, Sessao, Registro
-from datetime import datetime
+from datetime import datetime, timezone
 
 class RepositoriosPresenca:
     def __init__(self, db: Session):
@@ -19,7 +19,7 @@ class RepositoriosPresenca:
         return nova_sessao
 
     def encerrar_sessao(self, sessao: Sessao):
-        sessao.fim = datetime.utcnow()
+        sessao.fim = datetime.now(timezone.utc)
         sessao.status = 'encerrada'
         self.db.commit()
 
