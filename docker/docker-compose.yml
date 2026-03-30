@@ -1,16 +1,12 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16
     container_name: explicaaso_db
     restart: always
-    # Lê as senhas do cofre oculto
     env_file:
       - ../.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Sem portas expostas para o host local! 100% blindado.
 
   app:
     build:
@@ -22,9 +18,6 @@ services:
       - db
     env_file:
       - ../.env
-    environment:
-      # Monta a URL de conexão usando as variáveis ocultas
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     volumes:
       - ../:/app
     ports:
