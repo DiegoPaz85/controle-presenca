@@ -1,55 +1,16 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyc
-*.so
-.python
-venv/
-env/
-ENV/
-*.egg-info/
-dist/
-build/
-
-# Banco de dados
-*.db
-*.sqlite
-*.sql
-!scripts/init_db.sql
-
-# Backups
+# 🛑 IGNORAR ARQUIVOS DE DADOS E BACKUPS (MUITO IMPORTANTE)
 backups/
-*.backup
-*.sql.gz
-*.dump
-
-# Logs
 logs/
-*.log
+docker/postgres_data/
 
-# Credenciais (IMPORTANTE!)
+# 🛑 IGNORAR SENHAS E CREDENCIAIS
+.env
 credentials/
-*.json
-!.env.example
-!credentials.example.json
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Sistema
-*.xlsx
-*.xls
-historico.txt
-*.tmp
-
-# Testes
-.pytest_cache/
-.coverage
-htmlcov/
-
-# OS
-.DS_Store
-Thumbs.db
+# 🐍 IGNORAR ARQUIVOS INÚTEIS DO PYTHON
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+env/
