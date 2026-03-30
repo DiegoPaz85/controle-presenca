@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-import random
+import secrets
 from ..database.models import Candidato, Aluno
 
 class SGDiService:
@@ -30,7 +30,7 @@ class SGDiService:
         cand.status = 'confirmado'
         
         # Gera o aluno com um ID de cartão aleatório (provisório até você entregar o cartão físico)
-        novo_cartao = random.randint(100000, 999999)
+        novo_cartao = secrets.randbelow(900000) + 100000
         novo_aluno = Aluno(cartao_id=novo_cartao, nome=cand.nome, status='ATIVADO')
         
         self.db.add(novo_aluno)
