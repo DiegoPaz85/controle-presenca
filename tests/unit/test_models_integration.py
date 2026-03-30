@@ -28,7 +28,6 @@ class TestModelsIntegration:
         """Testa se criar_tabelas executa sem erros"""
         try:
             criar_tabelas()
-            assert True
         except Exception as e:
             pytest.fail(f"criar_tabelas falhou: {e}")
     

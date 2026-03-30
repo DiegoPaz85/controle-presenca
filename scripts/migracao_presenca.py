@@ -1,7 +1,7 @@
 import pandas as pd
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
@@ -18,8 +18,8 @@ def migrar_presencas(caminho_arquivo):
         with SessionLocal() as db:
             # 1. Cria uma Sessão específica para os dados antigos
             sessao_hist = Sessao(
-                inicio=datetime.utcnow(), 
-                fim=datetime.utcnow(), 
+                inicio=datetime.now(timezone.utc), 
+                fim=datetime.now(timezone.utc), 
                 status='encerrada' # Já nasce encerrada para não atrapalhar o sistema
             )
             db.add(sessao_hist)
