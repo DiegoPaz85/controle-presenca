@@ -1,6 +1,6 @@
-# 📚 ExplicaASO - Sistema Unificado de Presença e Gestão de Alunos
+# 📚 ExpliCAASO - Sistema Unificado de Presença e Gestão de Alunos
 
-O **ExplicaASO** é um sistema robusto e seguro desenvolvido para unificar o controle de presença e a gestão de alunos do projeto. Ele substitui um ecossistema antigo baseado em planilhas soltas por uma arquitetura de software profissional baseada em microsserviços, conteinerização e banco de dados relacional.
+O **ExpliCAASO** é um sistema robusto e seguro desenvolvido para unificar o controle de presença e a gestão de alunos do projeto. Ele substitui um ecossistema antigo baseado em planilhas soltas por uma arquitetura de software profissional baseada em microsserviços, conteinerização e banco de dados relacional.
 
 ---
 ## 📂 Estrutura do Projeto
@@ -71,18 +71,7 @@ graph TD
     class DB database;
 
 
-📖 Entendendo a Evolução
-❌ O Problema: A Arquitetura Antiga
-Antigamente, o controle de presença e a gestão de alunos funcionavam como "ilhas" isoladas:
-
-Armazenamento Frágil: Os dados ficavam espalhados em arquivos de Excel (BancoDeDados.xlsx e presenca.xlsx).
-
-Falta de Integridade: Era possível ter uma batida de ponto de um aluno que já tinha sido apagado, gerando "dados fantasmas".
-
-Segurança Baixa: As senhas e dados sensíveis ficavam expostos diretamente no código-fonte.
-
-✅ A Solução: A Nova Arquitetura Unificada
-O sistema foi completamente reescrito para utilizar as melhores práticas de Engenharia de Software:
+✅  A arquitetura Unificada
 
 🐳 Infraestrutura em Docker: Todo o ecossistema roda dentro de containers. Isso garante que o sistema funcione perfeitamente em qualquer computador, sem o problema de dependências perdidas.
 
