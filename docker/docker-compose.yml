@@ -24,7 +24,7 @@ services:
       - "8000:8000"
     # A SOLUÇÃO ESTÁ AQUI: Ignora a trava de usuário apenas no ambiente local
     user: "root"
-    command: uvicorn src.controle_presenca.api.app:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn src.controle_presenca.api.main:app --host 0.0.0.0 --port 8000 --reload
 
   pgadmin:
     image: dpage/pgadmin4
