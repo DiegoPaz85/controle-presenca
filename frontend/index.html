@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpliCAASO - Controle de Presença</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>📚 ExpliCAASO</h1>
+                <p>Sistema Integrado de Controle de Presença</p>
+            </div>
+            <div class="status-badge" id="api-status">
+                <span class="spinner"></span> Verificando API...
+            </div>
+        </header>
+
+        <!-- Cards -->
+        <div class="cards-grid">
+            <!-- Card: Registrar Presença -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🪪</span>
+                    <h2>Registrar Presença</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Número do Cartão</label>
+                        <input type="text" id="cartao-id" placeholder="Digite o número do cartão" autocomplete="off">
+                    </div>
+                    <button onclick="registrarPresenca()" class="btn-primary">Registrar Presença</button>
+                    <div id="presenca-result" class="alert hidden"></div>
+                </div>
+            </div>
+
+            <!-- Card: Sessão Ativa -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🎓</span>
+                    <h2>Sessão de Aula</h2>
+                </div>
+                <div class="card-body">
+                    <div id="sessao-info" class="sessao-info">
+                        <p>Carregando sessão...</p>
+                    </div>
+                    <button onclick="iniciarSessao()" class="btn-success">▶️ Iniciar Sessão</button>
+                    <button onclick="encerrarSessao()" class="btn-danger">⏹️ Encerrar Sessão</button>
+                </div>
+            </div>
+
+            <!-- Card: Cadastrar Aluno -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">👨‍🎓</span>
+                    <h2>Cadastrar Aluno</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="aluno-nome" placeholder="Nome do aluno">
+                    </div>
+                    <div class="form-group">
+                        <label>Número do Cartão</label>
+                        <input type="number" id="aluno-cartao" placeholder="Número do cartão">
+                    </div>
+                    <button onclick="cadastrarAluno()" class="btn-primary">Cadastrar Aluno</button>
+                    <div id="aluno-result" class="alert hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabelas -->
+        <div class="tables-grid">
+            <!-- Lista de Alunos -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📋</span>
+                    <h2>Alunos Cadastrados</h2>
+                    <button onclick="listarAlunos()" class="btn-refresh">🔄 Atualizar</button>
+                </div>
+                <div class="table-container">
+                    <table id="alunos-table">
+                        <thead>
+                            <tr><th>ID</th><th>Nome</th><th>Cartão</th><th>Status</th>   </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4" class="text-center">Clique em "Atualizar"</td> </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
