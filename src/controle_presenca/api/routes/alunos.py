@@ -1,5 +1,8 @@
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends, HTTPException, status
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
+# pyrefly: ignore [missing-import]
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -90,4 +93,29 @@ def criar_aluno(aluno: AlunoCreate, db: Session = Depends(get_db)):
         cartao_id=novo_aluno.cartao_id,
         nome=novo_aluno.nome,
         status=novo_aluno.status
+    )
+
+# pyrefly: ignore [missing-import]
+from fastapi.responses import StreamingResponse
+import io
+import csv
+
+@router.get("/relatorio/csv")
+def exportar_relatorio_csv(db: Session = Depends(get_db)):
+    """Exporta o relatório de presenças em formato CSV"""
+    alunos = db.query(Aluno).filter(Aluno.status == 'ATIVADO').all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=';')
+    writer.writerow(['ID Cartão', 'Nome', 'Presença (%)', 'Carga Horária (horas)'])
+    
+    for a in alunos:
+        writer.writerow([a.cartao_id, a.nome, a.percentual_presenca, a.carga_horaria_total])
+        
+    output.seek(0)
+    
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=relatorio_presencas.csv"}
     )

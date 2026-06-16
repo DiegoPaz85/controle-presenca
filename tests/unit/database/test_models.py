@@ -44,10 +44,23 @@ class TestModels:
     def test_aluno_has_required_columns(self):
         """Verifica se Aluno tem as colunas necessárias"""
         Aluno = self.models.Aluno
-        required_attrs = ['id', 'cartao_id', 'nome', 'status']
+        required_attrs = ['id', 'cartao_id', 'nome', 'status', 'percentual_presenca', 'carga_horaria_total']
         for attr in required_attrs:
             assert hasattr(Aluno, attr), f"Aluno não tem atributo {attr}"
-    
+            
+    def test_intervalo_sessao_model_exists(self):
+        """Verifica se o modelo IntervaloSessao existe"""
+        IntervaloSessao = self.models.IntervaloSessao
+        assert hasattr(IntervaloSessao, '__tablename__')
+        assert IntervaloSessao.__tablename__ == 'intervalos_sessao'
+
+    def test_intervalo_sessao_has_required_columns(self):
+        """Verifica se IntervaloSessao tem as colunas necessárias"""
+        IntervaloSessao = self.models.IntervaloSessao
+        required_attrs = ['id', 'sessao_id', 'inicio', 'fim']
+        for attr in required_attrs:
+            assert hasattr(IntervaloSessao, attr), f"IntervaloSessao não tem atributo {attr}"
+
     def test_sessao_has_required_columns(self):
         """Verifica se Sessao tem as colunas necessárias"""
         Sessao = self.models.Sessao

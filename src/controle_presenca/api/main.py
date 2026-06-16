@@ -1,9 +1,12 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI
+# pyrefly: ignore [missing-import]
 from fastapi.staticfiles import StaticFiles
+# pyrefly: ignore [missing-import]
 from fastapi.responses import FileResponse
 import os
 
-from .routes import presenca, sessao, alunos
+from .routes import presenca, sessao, alunos, sgdi
 
 app = FastAPI(
     title="ExpliCAASO API",
@@ -15,6 +18,7 @@ app = FastAPI(
 app.include_router(presenca.router)
 app.include_router(sessao.router)
 app.include_router(alunos.router)
+app.include_router(sgdi.router)
 
 # Servir arquivos estáticos do frontend
 frontend_path = os.path.join(os.path.dirname(__file__), "../../../frontend")

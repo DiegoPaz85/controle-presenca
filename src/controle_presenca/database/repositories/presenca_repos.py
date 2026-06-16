@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models import Aluno, Sessao, Registro
+from ..models import Aluno, Sessao, Registro, IntervaloSessao
 from datetime import datetime, timezone
 
 class RepositoriosPresenca:
@@ -33,3 +33,39 @@ class RepositoriosPresenca:
         novo = Registro(aluno_id=aluno_id, sessao_id=sessao_id, tipo=tipo)
         self.db.add(novo)
         self.db.commit()
+
+    def obter_alunos_ativos(self):
+        return self.db.query(Aluno).filter(Aluno.status == 'ATIVADO').all()
+
+    def obter_registros_sessao(self, sessao_id: int):
+        return self.db.query(Registro).filter(
+            Registro.sessao_id == sessao_id
+        ).order_by(Registro.timestamp.asc()).all()
+
+    def obter_intervalo_ativo(self, sessao_id: int):
+        return self.db.query(IntervaloSessao).filter(
+            IntervaloSessao.sessao_id == sessao_id,
+            IntervaloSessao.fim == None
+        ).first()
+
+    def obter_intervalos_sessao(self, sessao_id: int):
+        return self.db.query(IntervaloSessao).filter(
+            IntervaloSessao.sessao_id == sessao_id
+        ).all()
+
+    def iniciar_intervalo(self, sessao_id: int):
+        ativo = self.obter_intervalo_ativo(sessao_id)
+        if ativo:
+            return ativo
+        novo = IntervaloSessao(sessao_id=sessao_id, inicio=datetime.now(timezone.utc))
+        self.db.add(novo)
+        self.db.commit()
+        return novo
+
+    def encerrar_intervalo(self, sessao_id: int):
+        ativo = self.obter_intervalo_ativo(sessao_id)
+        if not ativo:
+            return None
+        ativo.fim = datetime.now(timezone.utc)
+        self.db.commit()
+        return ativo
