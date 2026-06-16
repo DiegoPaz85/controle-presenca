@@ -332,5 +332,49 @@ async function carregarAuditoria() {
     }
 }
 
+// Atualizar o nome do arquivo selecionado no label
+function atualizarNomeArquivoImportado() {
+    const fileInput = document.getElementById('local-xlsx-file');
+    const label = document.getElementById('label-xlsx-file');
+    if (fileInput.files && fileInput.files[0]) {
+        label.textContent = `📂 ${fileInput.files[0].name}`;
+    } else {
+        label.textContent = '📂 Selecionar Planilha';
+    }
+}
+
+// Importar planilha localmente via API
+async function importarPlanilhaLocal() {
+    const fileInput = document.getElementById('local-xlsx-file');
+    
+    if (!fileInput.files || !fileInput.files[0]) {
+        showGlobalAlert("⚠️ Por favor, selecione um arquivo de planilha (.xlsx) primeiro!", "error");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch(`${API_URL}/sgdi/importar`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        if (response.ok) {
+            showGlobalAlert(`✅ Planilha importada! Inseridos: ${data.inseridos}, Erros/Duplicados: ${data.erros}`, 'success');
+            fileInput.value = '';
+            atualizarNomeArquivoImportado();
+            carregarRanking();
+        } else {
+            showGlobalAlert(`❌ ${data.detail || 'Erro ao processar planilha.'}`, 'error');
+        }
+    } catch (e) {
+        showGlobalAlert("❌ Erro de conexão com o servidor ao importar planilha local.", "error");
+    }
+}
+
 // Inicializar
 inicializar();

@@ -697,3 +697,74 @@ body {
     }
 }
 
+/* Classes Utilitárias do Importador Local */
+.width-100 {
+    width: 100%;
+}
+.margin-top-5 {
+    margin-top: 5px;
+}
+.text-center {
+    text-align: center;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+.desc-text-sm {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+.import-option-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+.import-option-box strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #0f172a;
+    margin-bottom: 5px;
+}
+.divider-text {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin: 15px 0;
+    position: relative;
+}
+.divider-text::before, .divider-text::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 38%;
+    height: 1px;
+    background: #e2e8f0;
+}
+.divider-text::before {
+    left: 0;
+}
+.divider-text::after {
+    right: 0;
+}
+.file-upload-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.file-upload-group label {
+    display: block;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.file-upload-group label:hover {
+    opacity: 0.9;
+    transform: scale(0.98);
+}
+
+

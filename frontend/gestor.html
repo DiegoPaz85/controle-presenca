@@ -94,17 +94,34 @@
         <div id="sec-sgdi" class="gestor-section hidden">
             <!-- Controles do Processo Seletivo -->
             <div class="cards-grid">
-                <!-- Sincronização automática com o Google Drive -->
+                <!-- Importação de Candidatos (Drive ou Local) -->
                 <div class="card">
                     <div class="card-header">
                         <span class="card-icon">☁️</span>
-                        <h2>1. Sincronizar Google Drive</h2>
+                        <h2>1. Importar Candidatos (SGDi)</h2>
                     </div>
                     <div class="card-body">
-                        <p class="desc-text">Baixa as respostas do formulário diretamente do Google Drive e as importa com cálculo de pontuação socioeconômica automático.</p>
-                        <button onclick="sincronizarDrive()" class="btn-success width-100 font-bold">🔄 Sincronizar Agora</button>
-                        <div id="sync-spinner" class="spinner-container hidden">
-                            <span class="spinner"></span> Sincronizando com o Google Drive, aguarde...
+                        <!-- Opção 1: Google Drive -->
+                        <div class="import-option-box">
+                            <strong>Nuvem (Google Drive)</strong>
+                            <p class="desc-text-sm">Baixa automaticamente do Drive usando a credencial configurada no servidor.</p>
+                            <button onclick="sincronizarDrive()" class="btn-success width-100 font-bold">🔄 Sincronizar Google Drive</button>
+                            <div id="sync-spinner" class="spinner-container hidden">
+                                <span class="spinner"></span> Sincronizando...
+                            </div>
+                        </div>
+
+                        <div class="divider-text">OU</div>
+
+                        <!-- Opção 2: Arquivo Local -->
+                        <div class="import-option-box">
+                            <strong>Planilha Local (.xlsx)</strong>
+                            <p class="desc-text-sm">Envie o arquivo do Excel diretamente do seu computador:</p>
+                            <div class="file-upload-group">
+                                <input type="file" id="local-xlsx-file" accept=".xlsx" class="hidden" onchange="atualizarNomeArquivoImportado()">
+                                <label for="local-xlsx-file" class="btn-info width-100 text-center cursor-pointer" id="label-xlsx-file">📂 Selecionar Planilha</label>
+                                <button onclick="importarPlanilhaLocal()" class="btn-primary width-100 margin-top-5 font-bold">📤 Upload e Importar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
