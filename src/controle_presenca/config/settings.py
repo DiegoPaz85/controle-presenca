@@ -13,9 +13,9 @@ class Settings:
 
     # Configurações SMTP
     SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
-    SMTP_USER = os.getenv("SMTP_USER", "explicaaso@caaso.org.br")
-    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "***REMOVED***")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", "465")) if os.getenv("SMTP_PORT") else 465
+    SMTP_USER = os.getenv("SMTP_USER")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
     # Configurações Google Drive
     GOOGLE_DRIVE_FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "1vg-QF86GNfO_1gS7KtIhrIDGwGuxtnIG")
