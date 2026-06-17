@@ -1,20 +1,23 @@
+from src.controle_presenca.api.routes import sgdi
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 
 from .routes import presenca, sessao, alunos
+ 
 
 app = FastAPI(
-    title="ExpliCAASO API",
+    title="Controle de Presença e SGDI",
     description="API para controle de presença e gestão de alunos",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 # Inclui as rotas da API
 app.include_router(presenca.router)
 app.include_router(sessao.router)
 app.include_router(alunos.router)
+app.include_router(sgdi.router)
 
 # Servir arquivos estáticos do frontend
 frontend_path = os.path.join(os.path.dirname(__file__), "../../../frontend")
@@ -31,7 +34,7 @@ def root():
     return {
         "status": "SUCESSO!",
         "mensagem": "A API e o Banco de Dados estão conversando!",
-        "versao": "1.0.0"
+        "versao": "2.0.0"
     }
 
 @app.get("/health")
