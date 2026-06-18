@@ -6,8 +6,32 @@ from typing import Dict
 # Ajuste os imports conforme a sua estrutura para pegar a dependência do banco
 from src.controle_presenca.database.connection import get_db
 from src.controle_presenca.services.sgdi_service import SGDiService
+from pydantic import BaseModel
+from src.controle_presenca.services.google_sheets_service import GoogleSheetsService
 
 router = APIRouter(prefix="/sgdi", tags=["SGDI"])
+
+
+
+
+class SincronizacaoRequest(BaseModel):
+    spreadsheet_id: str
+
+@router.post("/sincronizar-forms", status_code=status.HTTP_200_OK)
+def sincronizar_forms(payload: SincronizacaoRequest, db: Session = Depends(get_db)):
+    """
+    Busca todas as respostas direto na planilha do Google Forms.
+    (Versão de Teste: Lendo apenas as 3 primeiras questões reais).
+    """
+    service = GoogleSheetsService(db)
+    try:
+        resultado = service.sincronizar_dados_forms(spreadsheet_id=payload.spreadsheet_id)
+        return {
+            "mensagem": "Sincronização com o Google concluída!",
+            "detalhes": resultado
+        }
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 # --- ESQUEMAS DE VALIDAÇÃO (PYDANTIC) ---
 
