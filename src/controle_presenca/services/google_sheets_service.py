@@ -39,39 +39,35 @@ class GoogleSheetsService:
                 if not nome or not cpf:
                     continue
 
-                # Puxa as 3 respostas reais que vieram do Google Forms
-                q1 = str(linha.get("1. Onde você mora atualmente?", ""))
-                q2 = str(linha.get("2. Qual a sua escolaridade?", ""))
-                q3 = str(linha.get("3. Onde cursou o ensino fundamental?", ""))
-
-                # Monta o dicionário. Usamos as 3 reais e "mockamos" as outras 23 para a matemática não quebrar
+                # 4. Monta o dicionário dinâmico com as 26 perguntas REAIS
+                # O método .get() procura a coluna exata e retorna "" se o candidato não respondeu
                 respostas_questionario = {
-                    "q1_residencia": q1,
-                    "q2_escolaridade": q2,
-                    "q3_escola_fundamental": q3,
-                    "q4_escola_medio": "Escola pública estadual",
-                    "q5_formacao_complementar": "Nenhuma das anteriores",
-                    "q6_filhos": "Não tenho filhos",
-                    "q7_pessoas_moram_com_voce": "Moro sozinho",
-                    "q8_escolaridade_pai": "Ensino Médio (antigo 2º grau)",
-                    "q9_escolaridade_mae": "Ensino Médio (antigo 2º grau)",
-                    "q10_local_moradia": "Alugado",
-                    "q11_localizacao_moradia": "Zona urbana",
-                    "q12_moradia_sao_carlos": "Sim",
-                    "q13_servicos_casa": "Coleta de lixo, água encanada",
-                    "q14_renda_familiar": "De R$ 954,01 até R$ 1.908,00",
-                    "q15_renda_individual": "Nenhuma renda",
-                    "q16_veiculos": "Nenhum",
-                    "q17_computadores": "Um",
-                    "q18_televisao": "Não",
-                    "q19_servicos_domesticos": "Não, sou eu quem faz sozinho(a)",
-                    "q20_procura_emprego": "Sim",
-                    "q21_necessidades_especiais": "Não",
-                    "q22_trabalho_atual": "Não trabalho",
-                    "q23_genero": "Masculino",
-                    "q24_razoes_trabalho": "Não trabalho",
-                    "q25_jornada_trabalho": "Não trabalho",
-                    "q26_idade_comecou_trabalhar": "Após 18 anos"
+                    "q1_residencia": str(linha.get("Situação de residência", "")).strip(),
+                    "q2_escolaridade": str(linha.get("Qual é seu nível de escolaridade?", "")).strip(),
+                    "q3_escola_fundamental": str(linha.get("Em que tipo de escola você cursou o ensino fundamental?", "")).strip(),
+                    "q4_escola_medio": str(linha.get("Em que tipo de escola você cursou (ou cursa) o ensino médio?", "")).strip(),
+                    "q5_formacao_complementar": str(linha.get("Você possui ou realiza alguma espécie de formação complementar ? (Caso se enquadre em mais de uma opção, assinale a que você considera mais relevante na sua jornada educacional)", "")).strip(),
+                    "q6_filhos": str(linha.get("Você tem filhos? Se sim, quantos?", "")).strip(),
+                    "q7_pessoas_moram_com_voce": str(linha.get("Quantas pessoas moram com você? (incluindo filhos, irmãos, parentes, amigos e agregados)", "")).strip(),
+                    "q8_escolaridade_pai": str(linha.get("Qual é o nível de escolaridade do seu pai?", "")).strip(),
+                    "q9_escolaridade_mae": str(linha.get("Qual é o nível de escolaridade da sua mãe?", "")).strip(),
+                    "q10_local_moradia": str(linha.get("O local onde você mora é", "")).strip(),
+                    "q11_localizacao_moradia": str(linha.get("Sua moradia está localizada em", "")).strip(),
+                    "q12_moradia_sao_carlos": str(linha.get("A sua moradia está localizada em São Carlos?", "")).strip(),
+                    "q13_servicos_casa": str(linha.get("Assinale a alternativa que melhor corresponde aos serviços disponíveis em sua casa", "")).strip(),
+                    "q14_renda_familiar": str(linha.get("Somando a sua renda com a renda das pessoas que moram com você, quanto é, aproximadamente, a renda familiar mensal? (Marque apenas uma resposta)", "")).strip(),
+                    "q15_renda_individual": str(linha.get("Qual é a SUA renda mensal individual, aproximadamente?", "")).strip(),
+                    "q16_veiculos": str(linha.get("Com quais e quantos veículos automotores (carros, motocicletas, tratores entre outros) conta você e os outros moradores da sua residência", "")).strip(),
+                    "q17_computadores": str(linha.get("Descreva o número de computadores, tablets, notebooks ou similares que são e propriedade sua ou dos membros de sua residência", "")).strip(),
+                    "q18_televisao": str(linha.get("Você possui dois ou mais aparelhos de televisão em sua residência?", "")).strip(),
+                    "q19_servicos_domesticos": str(linha.get("Você emprega ou contratou, em algum momento da sua vida, pessoa ou firma para executar serviços domésticos (babá, faxineiro(a), caseiro(a), lavanderia, etc) em sua residência ou imóvel de sua propriedade", "")).strip(),
+                    "q20_procura_emprego": str(linha.get("Você trabalha, já trabalhou ou esteve SERIAMENTE à procura de emprego nos últimos seis meses?", "")).strip(),
+                    "q21_necessidades_especiais": str(linha.get("Na sua casa, existem pessoas com necessidades especiais?", "")).strip(),
+                    "q22_trabalho_atual": str(linha.get("Em que você trabalha atualmente? (Marque apenas a sua atividade principal)", "")).strip(),
+                    "q23_genero": str(linha.get("Qual é o seu gênero?", "")).strip(),
+                    "q24_razoes_trabalho": str(linha.get("Assinale a alternativa cujo conteúdo melhor corresponde às razões pelas quais você começou a trabalhar", "")).strip(),
+                    "q25_jornada_trabalho": str(linha.get("De quantas horas é sua jornada semanal de trabalho?", "")).strip(),
+                    "q26_idade_comecou_trabalhar": str(linha.get("Com que idade você começou a trabalhar?", "")).strip()
                 }
 
                 # Chama o seu motor que já está pronto e testado
@@ -88,3 +84,11 @@ class GoogleSheetsService:
                 erros.append({"linha": nome, "erro": str(e)})
 
         return {"processados_com_sucesso": sucessos, "falhas_ou_duplicados": erros}
+
+
+
+
+
+
+
+
