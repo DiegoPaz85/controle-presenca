@@ -91,3 +91,23 @@ def criar_aluno(aluno: AlunoCreate, db: Session = Depends(get_db)):
         nome=novo_aluno.nome,
         status=novo_aluno.status
     )
+    
+@router.delete("/{aluno_id}", status_code=status.HTTP_200_OK)
+def desativar_aluno(aluno_id: int, db: Session = Depends(get_db)):
+    """Desativa um aluno (exclusão lógica) para que ele pare de contabilizar presenças e faltas."""
+    
+    # Importe o modelo Aluno lá no topo do arquivo se ele já não estiver importado
+    # from src.controle_presenca.database.models import Aluno
+    
+    aluno = db.query(Aluno).filter(Aluno.id == aluno_id).first()
+    
+    if not aluno:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado no banco de dados.")
+    
+    if aluno.status == "DESATIVADO":
+        raise HTTPException(status_code=400, detail="Este aluno já encontra-se desativado.")
+        
+    aluno.status = "DESATIVADO"
+    db.commit()
+    
+    return {"mensagem": f"Aluno desativado com sucesso!"}

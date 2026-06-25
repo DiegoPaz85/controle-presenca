@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal do Leitor | ExpliCAASO</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* Estilos específicos para o modo Kiosk */
+        .scan-box {
+            background: #f8f9fa; border: 3px dashed #667eea; border-radius: 15px; padding: 40px 20px; text-align: center; margin-bottom: 20px;
+        }
+        .scan-input {
+            width: 80%; padding: 15px; font-size: 1.5rem; text-align: center; border: 2px solid #ccc; border-radius: 10px; margin-top: 15px;
+        }
+        .scan-input:focus {
+            border-color: #667eea; outline: none; box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+        .timeline { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; }
+        .timeline li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 900px;">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>📍 Terminal de Presença</h1>
+                <p>Modo Kiosk - Passe o cartão no leitor</p>
+            </div>
+            <div id="status-sessao" class="status-badge offline">
+                ❌ Nenhuma Aula Ativa
+            </div>
+        </header>
+
+        <!-- Controle do Professor -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-body" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin-bottom: 5px;">Controle da Aula</h3>
+                    <p id="info-sessao" style="color: #666; font-size: 0.9rem;">Aguardando inicialização...</p>
+                </div>
+                <div>
+                    <button id="btn-iniciar" onclick="sessaoIniciar()" class="btn-success">▶️ Iniciar Aula</button>
+                    <button id="btn-encerrar" onclick="sessaoEncerrar()" class="btn-danger hidden">⏹️ Encerrar Aula</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área do Leitor de Cartão -->
+        <div class="card">
+            <div class="card-body scan-box">
+                <h2>🔌 Aproxime o Cartão do Leitor</h2>
+                <p style="color: #666; margin-top: 5px;">O campo abaixo deve estar selecionado (piscando) para o leitor USB funcionar.</p>
+                
+                <!-- O input capta os números do código de barras -->
+                <input type="text" id="input-cartao" class="scan-input" placeholder="Aguardando bip..." autocomplete="off" autofocus>
+                
+                <div id="alerta-leitura" class="alert hidden" style="margin-top: 15px; font-size: 1.1rem; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <!-- Leituras Recentes -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <h2>⚡ Leituras Recentes</h2>
+            </div>
+            <div class="card-body">
+                <ul id="lista-leituras" class="timeline">
+                    <li style="color: #999;">Nenhuma presença registrada nesta sessão ainda.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/leitor.js"></script>
+</body>
+</html>
