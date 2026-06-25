@@ -89,7 +89,7 @@ make up
 
 Com o sistema rodando, os seguintes portais estarão disponíveis no seu navegador:
 
-Serviço	URL de Acesso	Descrição
+Serviço	URL de Acesso	Descrição:
 📍 Terminal do Leitor	http://localhost:8000/static/leitor.html	Tela para a porta da sala de aula.
 📊 Painel do Gestor	http://localhost:8000/static/gestor.html	Tela administrativa (SGDI e Frequência).
 ⚙️ API (Swagger)	http://localhost:8000/docs	Documentação interativa dos endpoints.
