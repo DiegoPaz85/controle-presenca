@@ -40,6 +40,13 @@ class Sessao(Base):
     registros = relationship("Registro", back_populates="sessao")
 
 
+class IntervaloSessao(Base):
+    __tablename__ = 'intervalos_sessao'
+    id = Column(Integer, primary_key=True, index=True)
+    sessao_id = Column(Integer, ForeignKey('sessoes.id'), nullable=False)
+    inicio = Column(DateTime, default=datetime.utcnow, nullable=False)
+    fim = Column(DateTime, nullable=True)
+
 class Registro(Base):
     __tablename__ = "registros"
 

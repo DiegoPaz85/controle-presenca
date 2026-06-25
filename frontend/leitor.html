@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpliCAASO - Terminal do Leitor</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Voltar para o Portal -->
+        <div class="nav-back">
+            <a href="/" class="btn-back">← Voltar ao Portal</a>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>📍 Terminal do Leitor</h1>
+                <p>Modo Kiosk - Registro de Presenças na Sala de Aula</p>
+            </div>
+            <div class="status-badge" id="api-status">
+                <span class="spinner"></span> Verificando API...
+            </div>
+        </header>
+
+        <!-- Widgets de Estatísticas Real-time -->
+        <div class="stats-row">
+            <div class="stat-box card">
+                <h3>Sessão Ativa</h3>
+                <p id="stat-sessao-status" class="status-value text-red">❌ NÃO</p>
+            </div>
+            <div class="stat-box card">
+                <h3>Total de Alunos</h3>
+                <p id="stat-total-alunos" class="status-value">-</p>
+            </div>
+            <div class="stat-box card">
+                <h3>Presentes na Sala</h3>
+                <p id="stat-presentes" class="status-value text-green">-</p>
+            </div>
+            <div class="stat-box card">
+                <h3>Taxa de Ocupação</h3>
+                <p id="stat-ocupacao" class="status-value text-blue">-</p>
+            </div>
+        </div>
+
+        <!-- Grid Principal do Leitor -->
+        <div class="leitor-grid">
+            <!-- Coluna Esquerda: Leitura e Controles -->
+            <div class="leitor-controles-col">
+                <!-- Card: Entrada do Scanner -->
+                <div class="card scan-card">
+                    <div class="card-header">
+                        <span class="card-icon">🔌</span>
+                        <h2>Aproxime o Cartão</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="scan-input-wrapper">
+                            <input type="text" id="scan-cartao-id" placeholder="Aguardando scanner USB..." autocomplete="off" autofocus>
+                            <p class="scan-help">Mantenha esta página ativa. O cursor é focado automaticamente.</p>
+                        </div>
+                        <div id="scan-result" class="alert hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Card: Painel de Controle de Aula -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">⚙️</span>
+                        <h2>Painel do Professor</h2>
+                    </div>
+                    <div class="card-body btn-row">
+                        <button id="btn-session" onclick="toggleSessao()" class="btn-success width-100">▶️ Iniciar Aula (Sessão)</button>
+                        <button id="btn-interval" onclick="toggleIntervalo()" class="btn-warning width-100" disabled>🟢 Iniciar Intervalo</button>
+                    </div>
+                </div>
+
+                <!-- Card: Leituras Recentes -->
+                <div class="card scroll-card">
+                    <div class="card-header">
+                        <span class="card-icon">⚡</span>
+                        <h2>Leituras Recentes</h2>
+                    </div>
+                    <div class="card-body">
+                        <ul id="timeline-leituras" class="timeline-list">
+                            <li class="text-muted">Nenhuma leitura registrada nesta sessão.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Mapa da Sala (Dentro vs Fora) -->
+            <div class="leitor-alunos-col">
+                <div class="card list-card">
+                    <div class="card-header tabs-header">
+                        <span class="card-icon">📋</span>
+                        <h2>Mapa de Presença da Sala</h2>
+                        <div class="tabs-control">
+                            <button onclick="setTab('todos')" id="tab-todos" class="tab-btn active">Todos (<span id="count-todos">0</span>)</button>
+                            <button onclick="setTab('dentro')" id="tab-dentro" class="tab-btn">Na Sala (<span id="count-dentro">0</span>)</button>
+                            <button onclick="setTab('fora')" id="tab-fora" class="tab-btn">Fora (<span id="count-fora">0</span>)</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="alunos-sala-table">
+                            <thead>
+                                <tr>
+                                    <th>Discente</th>
+                                    <th>Nº Cartão</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Carregando mapa da sala...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/leitor.js"></script>
+</body>
+</html>

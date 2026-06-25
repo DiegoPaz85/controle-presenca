@@ -60,6 +60,50 @@ class SGDiService:
             self.db.rollback()
             raise RuntimeError(f"Erro inesperado ao registrar candidato: {str(e)}")
 
+    def cadastrar_candidato(self, nome: str, cpf: str, email: str, respostas: dict = None):
+        """
+        Cadastra um novo candidato limpando dados (CPF e Nome) e evitando duplicatas.
+        Opcionalmente calcula a pontuação socioeconômica real baseada no questionário.
+        """
+        cpf_limpo = ''.join(c for c in cpf if c.isdigit())
+        if len(cpf_limpo) != 11:
+            return False, "❌ CPF inválido. Deve conter 11 dígitos."
+
+        nome_limpo = nome.strip().upper()
+
+        # Evita duplicidade por CPF
+        c_existente = self.db.query(Candidato).filter(Candidato.cpf == cpf_limpo).first()
+        if c_existente:
+            return False, f"❌ Candidato com CPF {cpf_limpo} já cadastrado."
+
+        # Calcula a pontuação real caso as respostas do formulário tenham sido informadas
+        pontos = 0.0
+        if respostas:
+            pontos = ScoreCalculator.calcular_score(respostas)
+
+        novo_cand = Candidato(
+            nome=nome_limpo,
+            cpf=cpf_limpo,
+            email=email.strip(),
+            status='pendente',
+            pontuacao_socioeconomica=pontos
+        )
+        self.db.add(novo_cand)
+        self.db.flush()
+
+        # Registrar no histórico
+        historico = HistoricoStatusCandidato(
+            candidato_id=novo_cand.id,
+            candidato_nome=novo_cand.nome,
+            candidato_cpf=novo_cand.cpf,
+            status_anterior=None,
+            status_novo='pendente',
+            observacao="Cadastro inicial do candidato."
+        )
+        self.db.add(historico)
+        self.db.commit()
+        return True, f"✅ Candidato {nome_limpo} cadastrado com sucesso!"
+
     def gerar_ranking(self, limite: int = 60):
         # Busca candidatos pendentes e ordena da maior pontuação para a menor
         candidatos = (
@@ -72,6 +116,17 @@ class SGDiService:
         return candidatos
 
     def aprovar_corte(self, quantidade: int):
+        """
+        Aprova candidatos do topo do ranking, respeitando o limite rígido de 60 discentes ativos.
+        """
+        total_ativos = self.db.query(Aluno).filter(Aluno.status == 'ATIVADO').count()
+        if total_ativos + quantidade > 60:
+            vagas = max(0, 60 - total_ativos)
+            raise ValueError(
+                f"⚠️ O corte de {quantidade} excede o limite máximo de 60 discentes ativos! "
+                f"(Atuais: {total_ativos}, Vagas restantes: {vagas})"
+            )
+
         aprovados = self.gerar_ranking(quantidade)
         for cand in aprovados:
             cand.status = "aprovado"
@@ -101,6 +156,18 @@ class SGDiService:
         )
 
         self.db.add(novo_aluno)
+        
+        # Registrar no histórico
+        historico = HistoricoStatusCandidato(
+            candidato_id=cand.id,
+            candidato_nome=cand.nome,
+            candidato_cpf=cand.cpf,
+            status_anterior=status_anterior,
+            status_novo='confirmado',
+            observacao=f"Matrícula efetuada. Aluno gerado com Cartão ID: {novo_cartao}"
+        )
+        self.db.add(historico)
+        
         self.db.commit()
 
         #  AQUI: Dispara o e-mail de aprovação
