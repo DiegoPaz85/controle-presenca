@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status,BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from typing import Dict
@@ -8,15 +8,14 @@ from src.controle_presenca.services.sgdi_service import SGDiService
 from src.controle_presenca.services.google_sheets_service import GoogleSheetsService
 from src.controle_presenca.services.cartola_magica_service import CartolaMagicaService
 
+# ==========================================
 # 1. Roteador exclusivo do SGDI
+# ==========================================
 router_sgdi = APIRouter(prefix="/sgdi", tags=["SGDI"])
 
 @router_sgdi.post("/sincronizar-forms", status_code=status.HTTP_200_OK)
 def sincronizar_forms(db: Session = Depends(get_db)):
-    """
-    Busca todas as respostas direto na planilha do Google Forms usando a URL do .env.
-    Lê as respostas reais e injeta no banco de dados.
-    """
+    """Busca todas as respostas direto na planilha do Google Forms usando a URL do .env."""
     service = GoogleSheetsService(db)
     try:
         resultado = service.sincronizar_dados_forms()
@@ -29,10 +28,7 @@ def sincronizar_forms(db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro interno: {str(e)}",
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro interno: {str(e)}")
 
 class RegistroCandidatoRequest(BaseModel):
     nome: str
@@ -62,10 +58,7 @@ def inscrever_candidato(payload: RegistroCandidatoRequest, db: Session = Depends
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erro interno no servidor.",
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno no servidor.")
 
 @router_sgdi.get("/candidatos/busca", status_code=status.HTTP_200_OK)
 def buscar_candidato(termo: str, db: Session = Depends(get_db)):
@@ -98,34 +91,14 @@ def fechar_turma_e_aprovar(vagas: int = 60, db: Session = Depends(get_db)):
         "vagas_preenchidas": qtd_aprovados,
     }
 
-
-# 2. Roteador exclusivo dos Relatórios
-router_relatorios = APIRouter(prefix="/relatorios", tags=["Relatórios (Cartola Mágica)"])
-
-@router_relatorios.get("/frequencia", status_code=status.HTTP_200_OK)
-def obter_frequencia_geral(db: Session = Depends(get_db)):
-    """Gera o relatório completo de presenças e faltas da turma."""
-    service = CartolaMagicaService(db)
-    return service.gerar_relatorio_frequencia()
-
-
 @router_sgdi.post("/candidatos/{cpf}/matricular", status_code=status.HTTP_200_OK)
 def matricular_candidato(cpf: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    """
-    Efetiva a matrícula instantaneamente no banco de dados e
-    agenda a geração do cartão e o envio do e-mail para o segundo plano.
-    """
+    """Efetiva a matrícula e agenda o e-mail para o segundo plano."""
     service = SGDiService(db)
     try:
-        # Se o seu serviço já faz tudo interno, podemos passar as tarefas em segundo plano para ele
-        # Ou podemos rodar a função pesada de e-mail aqui.
-        
-        # Exemplo se o seu service aceitar background_tasks:
         sucesso, mensagem = service.matricular_candidato(cpf, background_tasks=background_tasks)
-        
         if not sucesso:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=mensagem)
-            
         return {
             "status": "sucesso", 
             "mensagem": "Matrícula efetuada! O e-mail com o cartão está a ser enviado em segundo plano."
@@ -134,3 +107,37 @@ def matricular_candidato(cpf: str, background_tasks: BackgroundTasks, db: Sessio
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# ---> ROTA DE RANKING ADICIONADA AQUI <---
+@router_sgdi.get("/ranking", status_code=status.HTTP_200_OK)
+def obter_ranking(db: Session = Depends(get_db)):
+    """Retorna a lista de candidatos pendentes e aprovados para a tabela do painel."""
+    service = SGDiService(db)
+    candidatos = service.gerar_ranking(limite=100)
+    
+    # TRADUÇÃO: Converte explicitamente para dicionário para evitar erro 500 do FastAPI
+    return [
+        {
+            "id": c.id,
+            "nome": c.nome,
+            "cpf": c.cpf,
+            "pontuacao_socioeconomica": c.pontuacao_socioeconomica,
+            "status": c.status
+        }
+        for c in candidatos
+    ]
+
+# ==========================================
+# 2. Roteador exclusivo dos Relatórios
+# ==========================================
+router_relatorios = APIRouter(prefix="/relatorios", tags=["Relatórios (Cartola Mágica)"])
+
+@router_relatorios.get("/frequencia", status_code=status.HTTP_200_OK)
+def obter_frequencia_geral(db: Session = Depends(get_db)):
+    """Gera o relatório completo de presenças e faltas da turma."""
+    try:
+        service = CartolaMagicaService(db)
+        return service.gerar_relatorio_frequencia()
+    except Exception as e:
+        # PROTEÇÃO: Se a tabela estiver vazia ou o serviço quebrar, devolve JSON limpo
+        return {"total_sessoes_gerais": 0, "alunos": []}

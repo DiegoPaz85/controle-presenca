@@ -3,220 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExpliCAASO - Painel do Gestor</title>
+    <title>Painel do Gestor | ExpliCAASO</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!-- Voltar para o Portal -->
-        <div class="nav-back">
-            <a href="/" class="btn-back">← Voltar ao Portal</a>
+        <div class="nav-back" style="margin-bottom: 15px;">
+            <a href="/static/leitor.html" class="btn-back" style="text-decoration: none; color: #667eea; font-weight: bold;">← Voltar ao Terminal do Leitor</a>
         </div>
 
-        <!-- Header -->
         <header class="header">
             <div class="logo">
                 <h1>📊 Painel do Gestor</h1>
-                <p>Gestão de Discentes, Processo Seletivo (SGDi) e Auditoria</p>
+                <p>Processo Seletivo, Frequência e Gestão de Alunos</p>
             </div>
             <div class="status-badge" id="api-status">
-                <span class="spinner"></span> Verificando API...
+                <span class="spinner"></span> Conectando...
             </div>
         </header>
 
-        <!-- Tabs de Controle Superior -->
-        <div class="gestor-tabs">
-            <button onclick="switchGestorTab('frequencia')" id="gtab-frequencia" class="gtab-btn active">📋 Discentes & Frequência</button>
-            <button onclick="switchGestorTab('sgdi')" id="gtab-sgdi" class="gtab-btn">👥 Processo Seletivo (SGDi)</button>
-            <button onclick="switchGestorTab('auditoria')" id="gtab-auditoria" class="gtab-btn">🔐 Histórico & Auditoria</button>
+        <div class="gestor-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button onclick="mudarAba('sgdi')" id="tab-sgdi" class="btn-primary" style="opacity: 1;">🎓 1. Processo Seletivo (SGDI)</button>
+            <button onclick="mudarAba('relatorios')" id="tab-relatorios" class="btn-primary" style="opacity: 0.6;">🎩 2. Relatório de Frequência</button>
+            <button onclick="mudarAba('alunos')" id="tab-alunos" class="btn-primary" style="opacity: 0.6;">📋 3. Gestão de Alunos</button>
         </div>
 
-        <!-- Alertas Globais -->
-        <div id="global-alert" class="alert hidden"></div>
+        <div id="alerta-global" class="alert" style="display: none; margin-bottom: 20px;"></div>
 
-        <!-- ================= ABA 1: DISCENTES & FREQUÊNCIA ================= -->
-        <div id="sec-frequencia" class="gestor-section">
-            <div class="cards-grid-2col">
-                <!-- Esquerda: Tabela de Alunos -->
-                <div class="card list-card">
-                    <div class="card-header font-between">
-                        <span class="card-icon">📋</span>
-                        <h2>Alunos Cadastrados</h2>
-                        <div class="header-actions">
-                            <button onclick="exportarRelatorioCSV()" class="btn-info">📥 Exportar CSV</button>
-                            <button onclick="carregarAlunos()" class="btn-refresh">🔄 Atualizar</button>
+        <div id="secao-sgdi" style="display: block;">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header"><h2>📥 1. Sincronizar Forms</h2></div>
+                    <div class="card-body">
+                        <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Busca as inscrições e notas diretamente na nuvem.</p>
+                        <button onclick="sgdiSincronizar()" class="btn-success width-100">Rodar Sincronização Google</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2>✂️ 2. Fechar Turma</h2></div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Vagas Disponíveis:</label>
+                            <input type="number" id="qtd-vagas" value="60">
                         </div>
+                        <button onclick="sgdiFecharTurma()" class="btn-warning width-100">Aprovar Turma</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2>✉️ 3. Matricular</h2></div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>CPF do Aprovado:</label>
+                            <input type="text" id="cpf-matricula" placeholder="Apenas números">
+                        </div>
+                        <button onclick="sgdiMatricular()" class="btn-primary width-100">Matricular e Enviar E-mail</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header" style="display: flex; justify-content: space-between;">
+                    <h2>🏆 Ranking Socioeconômico</h2>
+                    <button onclick="sgdiCarregarRanking()" class="btn-refresh">🔄 Atualizar Ranking</button>
+                </div>
+                <div class="table-container">
+                    <table id="tabela-ranking">
+                        <thead>
+                            <tr><th>Nome</th><th>CPF</th><th>Nota</th><th>Status</th><th>Ações</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="secao-relatorios" style="display: none;">
+            <div class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; background: linear-gradient(135deg, #17a2b8 0%, #0c5460 100%);">
+                    <h2 style="color: white;">🎩 Cartola Mágica: Frequência Geral</h2>
+                    <button onclick="relatoriosCarregarFrequencia()" class="btn-refresh" style="background: rgba(255,255,255,0.2); border: 1px solid white;">🔄 Gerar Relatório</button>
+                </div>
+                <div class="table-container">
+                    <table id="tabela-frequencia">
+                        <thead>
+                            <tr><th>ID Cartão</th><th>Nome do Aluno</th><th>Aulas Presentes</th><th>Frequência (%)</th><th>Status/Alerta</th></tr>
+                        </thead>
+                        <tbody><tr><td colspan="5" class="text-center">Clique em "Gerar Relatório" para iniciar.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="secao-alunos" style="display: none;">
+            <div class="cards-grid">
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header" style="display: flex; justify-content: space-between;">
+                        <h2>📋 Alunos Matriculados no Sistema</h2>
+                        <button onclick="alunosCarregarLista()" class="btn-refresh">🔄 Atualizar Lista</button>
                     </div>
                     <div class="table-container">
-                        <table id="alunos-gestao-table">
+                        <table id="tabela-alunos">
                             <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>Nº Cartão</th>
-                                    <th>Frequência</th>
-                                    <th>Carga Horária</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
+                                <tr><th>ID Banco</th><th>Nome</th><th>Nº do Cartão</th><th>Status</th><th>Ações</th></tr>
                             </thead>
-                            <tbody>
-                                <tr><td colspan="7" class="text-center text-muted">Carregando alunos...</td></tr>
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Direita: Cadastro Manual -->
-                <div class="card flex-self-start">
+                <div class="card">
                     <div class="card-header">
-                        <span class="card-icon">➕</span>
-                        <h2>Cadastro Manual de Aluno</h2>
+                        <h2>➕ Cadastro Manual Extra</h2>
                     </div>
                     <div class="card-body">
-                        <div class="form-group">
-                            <label>Nome Completo</label>
-                            <input type="text" id="aluno-nome" placeholder="Ex: João da Silva">
-                        </div>
-                        <div class="form-group">
-                            <label>Número do Cartão</label>
-                            <input type="number" id="aluno-cartao" placeholder="ID de 6 dígitos do cartão físico">
-                        </div>
-                        <button onclick="cadastrarAlunoManual()" class="btn-primary">Cadastrar Aluno</button>
-                        <div id="cadastro-result" class="alert hidden"></div>
+                        <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Para cadastrar monitores ou alunos extras.</p>
+                        <div class="form-group"><label>Nome Completo:</label><input type="text" id="aluno-nome"></div>
+                        <div class="form-group"><label>Número do Cartão:</label><input type="number" id="aluno-cartao"></div>
+                        <button onclick="alunosCadastrarManual()" class="btn-primary width-100">Salvar Aluno Direto</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ================= ABA 2: PROCESSO SELETIVO (SGDi) ================= -->
-        <div id="sec-sgdi" class="gestor-section hidden">
-            <!-- Controles do Processo Seletivo -->
-            <div class="cards-grid">
-                <!-- Importação de Candidatos (Drive ou Local) -->
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">☁️</span>
-                        <h2>1. Importar Candidatos (SGDi)</h2>
-                    </div>
-                    <div class="card-body">
-                        <!-- Opção 1: Google Drive -->
-                        <div class="import-option-box">
-                            <strong>Nuvem (Google Drive)</strong>
-                            <p class="desc-text-sm">Baixa automaticamente do Drive usando a credencial configurada no servidor.</p>
-                            <button onclick="sincronizarDrive()" class="btn-success width-100 font-bold">🔄 Sincronizar Google Drive</button>
-                            <div id="sync-spinner" class="spinner-container hidden">
-                                <span class="spinner"></span> Sincronizando...
-                            </div>
-                        </div>
-
-                        <div class="divider-text">OU</div>
-
-                        <!-- Opção 2: Arquivo Local -->
-                        <div class="import-option-box">
-                            <strong>Planilha Local (.xlsx)</strong>
-                            <p class="desc-text-sm">Envie o arquivo do Excel diretamente do seu computador:</p>
-                            <div class="file-upload-group">
-                                <input type="file" id="local-xlsx-file" accept=".xlsx" class="hidden" onchange="atualizarNomeArquivoImportado()">
-                                <label for="local-xlsx-file" class="btn-info width-100 text-center cursor-pointer" id="label-xlsx-file">📂 Selecionar Planilha</label>
-                                <button onclick="importarPlanilhaLocal()" class="btn-primary width-100 margin-top-5 font-bold">📤 Upload e Importar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Executar Linha de Corte -->
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">✂️</span>
-                        <h2>2. Executar Linha de Corte</h2>
-                    </div>
-                    <div class="card-body">
-                        <p class="desc-text">Aprova os melhores candidatos pendentes do ranking socioeconômico de forma decrescente (respeitando o limite de 60 ativos).</p>
-                        <div class="form-group margin-top-10">
-                            <label>Quantidade de Candidatos a Aprovar</label>
-                            <input type="number" id="corte-quantidade" placeholder="Ex: 10" min="1">
-                        </div>
-                        <button onclick="executarCorte()" class="btn-primary">Aprovar Candidatos</button>
-                    </div>
-                </div>
-
-                <!-- Matricular Candidato -->
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-icon">🎓</span>
-                        <h2>3. Efetivar Matrícula</h2>
-                    </div>
-                    <div class="card-body">
-                        <p class="desc-text">Transforma um candidato "Aprovado" em "Aluno Ativo", gerando seu número de cartão de acesso automaticamente.</p>
-                        <div class="form-group margin-top-10">
-                            <label>CPF do Candidato Aprovado</label>
-                            <input type="text" id="matricula-cpf" placeholder="Digite apenas números (11 dígitos)">
-                        </div>
-                        <button onclick="efetivarMatricula()" class="btn-primary">Efetivar Matrícula</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabela: Ranking / Candidatos Pendentes -->
-            <div class="card list-card">
-                <div class="card-header font-between">
-                    <span class="card-icon">🏆</span>
-                    <h2>Ranking Socioeconômico (Candidatos Pendentes)</h2>
-                    <button onclick="carregarRanking()" class="btn-refresh">🔄 Atualizar Ranking</button>
-                </div>
-                <div class="table-container">
-                    <table id="ranking-table">
-                        <thead>
-                            <tr>
-                                <th>Posição</th>
-                                <th>Nome</th>
-                                <th>CPF</th>
-                                <th>E-mail</th>
-                                <th>Score Socioeconômico</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="7" class="text-center text-muted">Carregando candidatos...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= ABA 3: HISTÓRICO & AUDITORIA ================= -->
-        <div id="sec-auditoria" class="gestor-section hidden">
-            <div class="card list-card">
-                <div class="card-header font-between">
-                    <span class="card-icon">🔐</span>
-                    <h2>Histórico Geral de Transições e Exclusões</h2>
-                    <button onclick="carregarAuditoria()" class="btn-refresh">🔄 Atualizar Histórico</button>
-                </div>
-                <div class="table-container">
-                    <table id="auditoria-table">
-                        <thead>
-                            <tr>
-                                <th>ID Transação</th>
-                                <th>Nome Candidato</th>
-                                <th>CPF Candidato</th>
-                                <th>Status Anterior</th>
-                                <th>Status Novo</th>
-                                <th>Data (UTC)</th>
-                                <th>Motivo / Observação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="7" class="text-center text-muted">Carregando auditoria...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
-
     <script src="/static/gestor.js"></script>
 </body>
 </html>
