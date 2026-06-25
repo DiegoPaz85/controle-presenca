@@ -17,5 +17,5 @@ def test_api_route_structure():
     assert len(routes) >= 1
     
     # Verifica se a rota raiz existe
-    root_route_exists = any(hasattr(route, 'path') and route.path == "/" for route in routes)
+    root_route_exists = any(route.path == "/" for route in routes)
     assert root_route_exists

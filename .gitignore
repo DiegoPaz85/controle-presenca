@@ -7,7 +7,6 @@ docker/postgres_data/
 .env
 credentials/
 credentials.json
-
 # 🐍 IGNORAR ARQUIVOS INÚTEIS DO PYTHON
 __pycache__/
 *.pyc

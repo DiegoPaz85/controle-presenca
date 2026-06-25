@@ -1,143 +1,144 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
-import os
+from typing import Dict
 
-from ...database.connection import SessionLocal
-from ...services.sgdi_service import SGDiService
+# Ajuste os imports conforme a sua estrutura para pegar a dependência do banco
+from src.controle_presenca.database.connection import get_db
+from src.controle_presenca.services.sgdi_service import SGDiService
+from src.controle_presenca.services.google_sheets_service import GoogleSheetsService
+from src.controle_presenca.services.cartola_magica_service import CartolaMagicaService
 
-router = APIRouter(prefix="/sgdi", tags=["SGDi"])
+router = APIRouter(prefix="/sgdi", tags=["SGDI"])
 
-def get_db():
-    db = SessionLocal()
+# 🗑️ A classe SincronizacaoRequest foi removida! O link agora é secreto e vem do .env.
+
+
+@router.post("/sincronizar-forms", status_code=status.HTTP_200_OK)
+def sincronizar_forms(db: Session = Depends(get_db)):
+    """
+    Busca todas as respostas direto na planilha do Google Forms usando a URL do .env.
+    Lê as respostas reais e injeta no banco de dados.
+    """
+    service = GoogleSheetsService(db)
     try:
-        yield db
-    finally:
-        db.close()
+        # Sem parâmetros! O serviço lê do .env e resolve sozinho.
+        resultado = service.sincronizar_dados_forms()
+        return {
+            "mensagem": "Sincronização com o Google concluída!",
+            "detalhes": resultado,
+        }
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro interno: {str(e)}",
+        )
 
-class CandidatoResponse(BaseModel):
-    id: int
+
+# --- ESQUEMAS DE VALIDAÇÃO (PYDANTIC) ---
+
+
+class RegistroCandidatoRequest(BaseModel):
     nome: str
     cpf: str
-    email: str
-    status: str
-    pontuacao_socioeconomica: float
+    email: EmailStr
+    respostas_questionario: Dict[str, str]
 
-    class Config:
-        from_attributes = True
 
-class HistoricoStatusResponse(BaseModel):
-    id: int
-    candidato_id: Optional[int] = None
-    candidato_nome: Optional[str] = None
-    candidato_cpf: Optional[str] = None
-    status_anterior: Optional[str] = None
-    status_novo: str
-    data_alteracao: datetime
-    observacao: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-class MatrículaRequest(BaseModel):
-    cpf: str
-
-class AprovarCorteRequest(BaseModel):
-    quantidade: int
-
-@router.get("/ranking", response_model=List[CandidatoResponse])
-def get_ranking(limite: Optional[int] = 60, db: Session = Depends(get_db)):
-    """Ver ranking socioeconômico de candidatos pendentes"""
-    service = SGDiService(db)
-    return service.gerar_ranking(limite)
-
-@router.post("/aprovar-corte")
-def aprovar_candidatos(req: AprovarCorteRequest, db: Session = Depends(get_db)):
-    """Aprova os N primeiros candidatos do ranking socioeconômico"""
+# --- ENDPOINTS ---
+@router.post("/candidatos", status_code=status.HTTP_201_CREATED)
+def inscrever_candidato(
+    payload: RegistroCandidatoRequest, db: Session = Depends(get_db)
+):
+    """
+    Endpoint para receber os dados de um candidato manualmente e registrá-lo.
+    """
     service = SGDiService(db)
     try:
-        n_aprovados = service.aprovar_corte(req.quantidade)
-        return {"mensagem": f"✅ {n_aprovados} candidatos aprovados com sucesso."}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/matricular")
-def matricular(req: MatrículaRequest, db: Session = Depends(get_db)):
-    """Efetiva a matrícula de um candidato aprovado por CPF"""
-    service = SGDiService(db)
-    sucesso, mensagem = service.matricular_candidato(req.cpf)
-    if not sucesso:
-        raise HTTPException(status_code=400, detail=mensagem)
-    return {"mensagem": mensagem}
-
-@router.get("/candidatos", response_model=List[CandidatoResponse])
-def buscar_candidatos(termo: Optional[str] = "", db: Session = Depends(get_db)):
-    """Pesquisa candidatos por nome ou CPF"""
-    service = SGDiService(db)
-    return service.pesquisar_candidatos(termo)
-
-@router.delete("/candidatos/{candidato_id}")
-def excluir_candidato(candidato_id: int, db: Session = Depends(get_db)):
-    """Exclui permanentemente um candidato do banco de dados"""
-    service = SGDiService(db)
-    sucesso = service.excluir_candidato(candidato_id)
-    if not sucesso:
-        raise HTTPException(status_code=404, detail="❌ Candidato não encontrado.")
-    return {"mensagem": "✅ Candidato excluído com sucesso."}
-
-@router.delete("/alunos/{aluno_id}")
-def desativar_aluno(aluno_id: int, db: Session = Depends(get_db)):
-    """Desativa (exclusão lógica) um aluno do controle de presenças"""
-    service = SGDiService(db)
-    sucesso, mensagem = service.desativar_aluno(aluno_id)
-    if not sucesso:
-        raise HTTPException(status_code=404, detail=mensagem)
-    return {"mensagem": mensagem}
-
-@router.post("/importar")
-async def importar_planilha(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    """Importa candidatos a partir de uma planilha enviada"""
-    temp_path = f"temp_{file.filename}"
-    with open(temp_path, "wb") as f:
-        f.write(await file.read())
-        
-    service = SGDiService(db)
-    try:
-        inseridos, erros = service.importar_candidatos_planilha(temp_path)
+        candidato = service.registrar_novo_candidato(
+            nome=payload.nome,
+            cpf=payload.cpf,
+            email=payload.email,
+            respostas_questionario=payload.respostas_questionario,
+        )
         return {
-            "mensagem": "✅ Importação concluída.",
-            "inseridos": inseridos,
-            "erros": erros
+            "mensagem": "Candidato registrado com sucesso!",
+            "dados": {
+                "id": candidato.id,
+                "nome": candidato.nome,
+                "pontuacao": candidato.pontuacao_socioeconomica,
+            },
         }
-    finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+    except ValueError as e:
+        # Pega erro de "CPF duplicado"
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erro interno no servidor.",
+        )
 
-@router.post("/sincronizar-drive")
-def sincronizar_drive(db: Session = Depends(get_db)):
-    """Sincroniza automaticamente a base de candidatos a partir do Google Drive"""
+
+@router.get("/candidatos/busca", status_code=status.HTTP_200_OK)
+def buscar_candidato(termo: str, db: Session = Depends(get_db)):
+    """
+    Pesquisa candidatos por CPF exato ou parte do nome.
+    Exemplo: /sgdi/candidatos/busca?termo=João
+    """
+    service = SGDiService(db)
+    resultados = service.buscar_candidato_por_cpf_ou_nome(termo)
+
+    if not resultados:
+        raise HTTPException(
+            status_code=404, detail="Nenhum candidato encontrado com esse termo."
+        )
+
+    return {"resultados": resultados}
+
+
+@router.delete("/candidatos/{cpf}", status_code=status.HTTP_200_OK)
+def remover_candidato(cpf: str, db: Session = Depends(get_db)):
+    """
+    Remove um candidato do sistema pelo CPF. Operação irreversível.
+    """
     service = SGDiService(db)
     try:
-        sucesso, mensagem = service.sincronizar_importacao_drive()
-        if not sucesso:
-            raise HTTPException(status_code=400, detail=mensagem)
-        return {"mensagem": mensagem}
-    except FileNotFoundError as e:
+        service.remover_candidato(cpf)
+        return {"mensagem": f"Candidato com CPF {cpf} removido com sucesso."}
+    except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno no servidor: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao remover: {str(e)}")
 
-@router.get("/candidatos/{candidato_id}/historico", response_model=List[HistoricoStatusResponse])
-def get_historico_candidato(candidato_id: int, db: Session = Depends(get_db)):
-    """Retorna o histórico de status de um candidato específico"""
+
+@router.post("/fechar-turma", status_code=status.HTTP_200_OK)
+def fechar_turma_e_aprovar(vagas: int = 60, db: Session = Depends(get_db)):
+    """
+    Roda o algoritmo de corte e aprova estritamente o número de vagas estipulado (Padrão: 60).
+    """
     service = SGDiService(db)
-    return service.obter_historico_candidato(candidato_id)
+    qtd_aprovados = service.aprovar_turma_oficial(limite_vagas=vagas)
 
-@router.get("/historico-geral", response_model=List[HistoricoStatusResponse])
-def get_historico_geral(db: Session = Depends(get_db)):
-    """Retorna todo o histórico de status de candidatos (incluindo deletados)"""
-    service = SGDiService(db)
-    return service.obter_historico_geral()
+    return {
+        "mensagem": "Processo de seleção finalizado!",
+        "vagas_preenchidas": qtd_aprovados,
+    }
 
+
+# Aqui rota para criação de relatorios
+
+router = APIRouter(prefix="/relatorios", tags=["Relatórios (Cartola Mágica)"])
+
+
+@router.get("/frequencia", status_code=status.HTTP_200_OK)
+def obter_frequencia_geral(db: Session = Depends(get_db)):
+    """
+    Gera o relatório completo de presenças e faltas da turma,
+    já ordenado para identificar alunos em risco de evasão (< 75%).
+    """
+    service = CartolaMagicaService(db)
+    return service.gerar_relatorio_frequencia()

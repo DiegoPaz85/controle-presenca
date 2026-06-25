@@ -13,7 +13,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: explicaaso_app
-    restart: always
+    restart: always # <- A BLINDAGEM CONTRA QUEDAS E FECHAMENTO DE TERMINAL
     depends_on:
       - db
     env_file:
@@ -24,6 +24,7 @@ services:
       - "8000:8000"
     # A SOLUÇÃO ESTÁ AQUI: Ignora a trava de usuário apenas no ambiente local
     user: "root"
+    # Comando de desenvolvimento (sobrescreve o CMD do Dockerfile adicionando o --reload)
     command: uvicorn src.controle_presenca.api.main:app --host 0.0.0.0 --port 8000 --reload
 
   pgadmin:
@@ -34,7 +35,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@explicaaso.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "5050:80"
+      - "5051:80"
     depends_on:
       - db
 
