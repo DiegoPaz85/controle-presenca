@@ -7,8 +7,14 @@ class GoogleSheetsService:
     def __init__(self, db: Session):
         self.db = db
         self.sgdi_service = SGDiService(db)
+        # 🌐 Centraliza a leitura do link da planilha via variável de ambiente
+        self.url_planilha = os.getenv("PLANILHA_INSCRICAO_URL")
 
-    def sincronizar_dados_forms(self, spreadsheet_id: str):
+    def sincronizar_dados_forms(self):
+        # Proteção caso alguém esqueça de configurar o .env
+        if not self.url_planilha:
+            raise ValueError("⚠️ A variável PLANILHA_INSCRICAO_URL não foi encontrada no arquivo .env!")
+
         # O arquivo credentials.json deve estar na pasta raiz do projeto
         path_to_json = "credentials.json"
         
@@ -18,8 +24,8 @@ class GoogleSheetsService:
         # 1. Autentica no Google
         gc = gspread.service_account(filename=path_to_json)
         
-        # 2. Abre a planilha pelo ID
-        sh = gc.open_by_key(spreadsheet_id)
+        # 2. Abre a planilha diretamente pela URL do .env
+        sh = gc.open_by_url(self.url_planilha)
         worksheet = sh.get_worksheet(0) # Pega a primeira aba (Respostas do formulário 1)
         
         # 3. Lê todas as linhas
@@ -84,11 +90,3 @@ class GoogleSheetsService:
                 erros.append({"linha": nome, "erro": str(e)})
 
         return {"processados_com_sucesso": sucessos, "falhas_ou_duplicados": erros}
-
-
-
-
-
-
-
-
